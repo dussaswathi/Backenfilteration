@@ -1,0 +1,58 @@
+<mvc:View 
+    controllerName="filterapp.controller.View1" 
+    xmlns:mvc="sap.ui.core.mvc" 
+    xmlns="sap.m">
+    <Shell id="shell">
+        <App id="apap">
+<pages>
+    <Page id="page" title="Orders_Orderitems">
+<content>
+
+ <OverflowToolbar design="Transparent">
+  
+  <Label  text="Order ID:"/>
+        <!-- <SearchField id="idsearchfielditemid" liveChange="onLiveSearchitemid" placeholder="Please Enter Item ID" width="20%" ></SearchField>
+                 <ToolbarSpacer/>   -->   
+                 <Input id="idInput" placeholder="Please Enter OrderID" showValueHelp="true" valueHelpOnly="false"  width="20%" valueHelpRequest="onHandleValueHelp"
+					suggestionItemSelected="onSuggestionItemSelected" liveChange="onCustomerLiveChange" showSuggestion="true"/>
+                    <!-- <Input id="idInput" placeholder="Please Enter OrderID" showValueHelp="false" valueHelpOnly="false" width="20%" liveChange="onCustomerLiveChange" showSuggestion="true"/> -->
+
+                </OverflowToolbar>
+  
+              <Table id="itemTable" 
+    items="{
+        path: 'ordersitemsModel>/'
+    }">
+    <columns>
+        <Column>
+            <Text text="ItemID" />
+        </Column>
+        <Column>
+            <Text text="ProductName" />
+        </Column>
+        <Column>
+            <Text text="Quantity" />
+        </Column>
+        <Column>
+            <Text text="Price" />
+        </Column>
+       
+    </columns>
+    <items>
+        <ColumnListItem>
+            <cells>
+                <Text text="{ordersitemsModel>ItemID}" />
+                <Text text="{ordersitemsModel>ProductName}" />
+                <Text text="{ordersitemsModel>Quantity}" />
+                <Text text="{ordersitemsModel>Price}" />
+            </cells>
+        </ColumnListItem>
+    </items>
+</Table>
+
+          </content>
+         </Page>
+        </pages>
+      </App>
+    </Shell>
+</mvc:View>
