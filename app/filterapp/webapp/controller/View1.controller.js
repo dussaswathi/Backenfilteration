@@ -83,29 +83,36 @@ sap.ui.define([
                 });
             }
         },
+         
         onCustomerLiveChange: function (oEvent) {
-            var sOrderID = oEvent.getParameter("value"); // Get the OrderID entered by the user
+            var sOrderID = oEvent.getParameter("value"); 
             var oView = this.getView();
-       
+        
             if (sOrderID) {
-                var oModel = this.getOwnerComponent().getModel(); // Get the main model of the app
+                var oModel = this.getOwnerComponent().getModel(); 
                 oModel.callFunction("/filteritems", {
                     method: "GET",
                     urlParameters: { OrderID: sOrderID }, // Send OrderID to backend
                     success: function (oData) {
-                        var oOrdersitemsModel = new JSONModel(oData.results || []); // Use empty array if no results
-                        oView.setModel(oOrdersitemsModel, "ordersitemsModel"); // Update table data
+                        // Get the results array, or an empty array if no results
+                        var aResults = oData.results || []; 
+                        if (aResults.length === 0) {
+                            MessageToast.show("No records found for the given OrderID."); 
+                        } // Use the results (or empty array if no results)
+                        var oOrdersitemsModel = new JSONModel(aResults);
+                        oView.setModel(oOrdersitemsModel, "ordersitemsModel"); 
                     },
                     error: function (err) {
                         MessageToast.show("Could not load filtered OrderItems!");
-                        oView.setModel(new JSONModel([]), "ordersitemsModel"); // Clear the table
+                        oView.setModel(new JSONModel([]), "ordersitemsModel");
                     }
                 });
             } else {
                 // If input is empty, clear the table
                 oView.setModel(new JSONModel([]), "ordersitemsModel");
             }
-        },      
+        },
+           
         _handleLiveChange: function(oEvent) {
             var sQuery = oEvent.getParameter("value");          
             if (sQuery) {              
@@ -168,7 +175,29 @@ sap.ui.define([
         //     }
         // },
 
-
+ // onCustomerLiveChange: function (oEvent) {
+        //     var sOrderID = oEvent.getParameter("value"); // Get the OrderID entered by the user
+        //     var oView = this.getView();
+       
+        //     if (sOrderID) {
+        //         var oModel = this.getOwnerComponent().getModel(); // Get the main model of the app
+        //         oModel.callFunction("/filteritems", {
+        //             method: "GET",
+        //             urlParameters: { OrderID: sOrderID }, // Send OrderID to backend
+        //             success: function (oData) {
+        //                 var oOrdersitemsModel = new JSONModel(oData.results || []); // Use empty array if no results
+        //                 oView.setModel(oOrdersitemsModel, "ordersitemsModel"); // Update table data
+        //             },
+        //             error: function (err) {
+        //                 MessageToast.show("Could not load filtered OrderItems!");
+        //                 oView.setModel(new JSONModel([]), "ordersitemsModel"); // Clear the table
+        //             }
+        //         });
+        //     } else {
+        //         // If input is empty, clear the table
+        //         oView.setModel(new JSONModel([]), "ordersitemsModel");
+        //     }
+        // }, 
 
 
 
