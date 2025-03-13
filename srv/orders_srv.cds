@@ -10,4 +10,5 @@ service OrderService {
     // function createOrder(OrderID: String, CustomerName: String, OrderDate: Date) returns Order;
     //  function createOrder(NewOrdersitemsdetailsData: String);
     function orderscreate(NewOrdersitemsdetailsData: String) returns String;
+    function DeletesOrderItems(ItemIDs: String) returns String;
 }

@@ -2,9 +2,10 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/json/JSONModel",
     "sap/m/MessageToast",
+    "sap/m/MessageBox",
     "sap/ui/model/Filter", 
     "sap/ui/model/FilterOperator"
-], function (Controller, JSONModel, MessageToast, Filter, FilterOperator) {
+], function (Controller, JSONModel, MessageToast,MessageBox, Filter, FilterOperator) {
     "use strict";
     var that;
     return Controller.extend("filterapp.controller.View1", {
@@ -12,6 +13,8 @@ sap.ui.define([
         onInit: function () {
             that = this;
             that.valuehelper();
+
+           
         },
         OnOrderandItems:function(){
             if (!that.Order_items) {
@@ -38,55 +41,181 @@ sap.ui.define([
             }
             this.valuehelper();
         },
-        // //first
-        // onMulticreateSubmit: function () {          
-        //     // Get values from the form fields
-        //     var sID = sap.ui.getCore().byId("idID").getValue();
-        //     var sCustomerName = sap.ui.getCore().byId("idCustomerName").getValue();
-        //     var currentDate = new Date();
-        
-        //     // Create the order data object
-        //     var orderData = {
-        //         ID: sID,
-        //         OrderDate: currentDate,
-        //         CustomerName: sCustomerName
-        //     };
-        
-        //     // Convert order data to JSON string
-        //     var jsonString = JSON.stringify(orderData);      
+       
+        // onUpdateOrder: function (oEvent) {
+        //     var oTable = this.byId("itemTable");
+        //     if (!oTable) {
+        //         MessageToast.show("Table not found.");
+        //         return;
+        //     }
+        //     var aSelectedItems = oTable.getSelectedItems();
+        //     if (aSelectedItems.length === 0) {
+        //         MessageToast.show("Please select at least one item to update.");
+        //         return;
+        //     }
+         
+        //     if (!this._oMultiUpdateFragment) {
+        //         this._oMultiUpdateFragment = sap.ui.xmlfragment("filterapp.fragments.Updatemulti", this);
+        //         this.getView().addDependent(this._oMultiUpdateFragment);
+        //     }
+        //     // Clear any previous data in the fragment before opening
         //     var oModel = this.getOwnerComponent().getModel();
-        //     // Call the OData function to create the order using GET method
-        //     oModel.callFunction("/orderscreate", {
-        //         method: "GET",  
-        //         urlParameters: {
-        //             NewOrdersitemsdetailsData: jsonString  // Passing the order data as URL parameters
-        //         },
-        //         success: function (oData) {
-        //             sap.m.MessageToast.show("Order created successfully!");
-                   
-        //         },
-        //         // error: function (error) {
-        //         //     if (error.responseText && error.responseText.includes("OrderID already exists")) {
-        //         //         sap.m.MessageToast.show("The OrderID already exists. Please choose a different ID.");
-        //         //     } else {
-        //         //         sap.m.MessageToast.show("Error creating order!");
-        //         //     }
-        //         // }
-        //         error: function (error) {
-        //             var errorMessage = error.responseText;                    
-        //             // Extract the specific error message from the response
-        //             var parsedError = JSON.parse(errorMessage);
-        //             var message = parsedError.error.message.value;       
-        //             // Check if the error message contains "Order with ID"
-        //             if (message && message.includes("Order with ID")) {
-        //                 sap.m.MessageToast.show(message);  // Display the specific error message like "Order with ID 1 already exists."
-        //             } else {
-        //                 sap.m.MessageToast.show("Error creating order!");
-        //             }
-        //         }
+        //     var aItemsToUpdate = [];
+        //     aSelectedItems.forEach(function (oItem) {
+        //         var oItemData = oItem.getBindingContext("ordersModel").getObject();
+        //         aItemsToUpdate.push(oItemData);
         //     });
+        //     var orderID = aItemsToUpdate[0].ID;
+        //     var CustomerName = aItemsToUpdate[0].CustomerName;
+        //     var oOrderDate = aItemsToUpdate[0].OrderDate;
+
+        //     var oCustomerNameInput = sap.ui.getCore().byId("idCustomerName1Update1");
+        //     var oOrderIDInput = sap.ui.getCore().byId("idOrderID4Update1");
+        //     var orderdateInput = sap.ui.getCore().byId("idOrderDate1Update1");
+
+        //     oCustomerNameInput.setValue(CustomerName);
+        //     oOrderIDInput.setValue(orderID);
+        //     orderdateInput.setValue(oOrderDate);
+
+        //     // Set the selected items data to the fragment model for binding
+        //     var oUpdateModel = new JSONModel(aItemsToUpdate);
+        //     this._oMultiUpdateFragment.setModel(oUpdateModel, "updateModel");
+
+        //     this._oMultiUpdateFragment.open();
         // },
-    //    //second
+        onUpdateOrder: function (oEvent) {
+            var oTable = this.byId("itemTable");
+            if (!oTable) {
+                MessageToast.show("Table not found.");
+                return;
+            }
+        
+            var aSelectedItems = oTable.getSelectedItems();
+            if (aSelectedItems.length === 0) {
+                MessageToast.show("Please select at least one item to update.");
+                return;
+            }
+        
+            // Create the update fragment only once
+            if (!this._oMultiUpdateFragment) {
+                this._oMultiUpdateFragment = sap.ui.xmlfragment("filterapp.fragments.Updatemulti", this);
+                this.getView().addDependent(this._oMultiUpdateFragment);
+            }
+        
+            // Retrieve the selected items data
+            var aItemsToUpdate = [];
+            aSelectedItems.forEach(function (oItem) {
+                var oItemData = oItem.getBindingContext("ordersitemsModel").getObject();
+                aItemsToUpdate.push(oItemData);
+            });
+        
+            // Optionally, extract common values like OrderID, CustomerName, OrderDate from one item if they are common
+            var orderID = aItemsToUpdate[0].OrderID;
+            var customerName = aItemsToUpdate[0].CustomerName;
+            var orderDate = aItemsToUpdate[0].OrderDate;
+        
+            // Set these values in the fragment fields
+            var oCustomerNameInput = sap.ui.getCore().byId("idCustomerName1Update1");
+            var oOrderIDInput = sap.ui.getCore().byId("idOrderID4Update1");
+            var orderdateInput = sap.ui.getCore().byId("idOrderDate1Update1");
+        
+            oCustomerNameInput.setValue(customerName);
+            oOrderIDInput.setValue(orderID);
+            orderdateInput.setValue(orderDate);
+        
+            // Set the selected items data to the fragment model for binding
+            var oUpdateModel = new JSONModel(aItemsToUpdate);
+            this._oMultiUpdateFragment.setModel(oUpdateModel, "updateModel");
+        
+            // Open the multi-update dialog
+            this._oMultiUpdateFragment.open();
+        },
+        onMultiUpdateClose: function(){
+this._oMultiUpdateFragment.close();
+        },
+        
+        onLiveSearchitemid: function (oEvent) {
+            var sQuery = oEvent.getParameter("newValue"); // Get the search query entered by the user
+            var oTable = this.byId("itemTable"); // Get the table control
+            var oBinding = oTable.getBinding("items"); // Get the binding of the table items
+            var aFilters = [];
+
+            if (sQuery) {
+                // Apply a filter for ItemID if the search query is not empty
+                var oFilter = new Filter({
+                    path: "ItemID", // Field to filter by
+                    operator: FilterOperator.StartsWith, // Search for partial matches
+                    value1: sQuery // The search query entered by the user
+                });
+                aFilters.push(oFilter);
+            }
+
+            // Apply the filter to the table binding
+            oBinding.filter(aFilters);
+        },
+        
+      
+        
+        onDeleteOrder: function (oEvent) {
+            var oTable = this.byId("itemTable"); 
+            var aSelectedItems = oTable.getSelectedItems(); 
+        
+            if (aSelectedItems.length === 0) {
+                sap.m.MessageBox.error("Please select at least one item to delete.");
+                return;
+            }
+        
+            var aItemIDs = aSelectedItems.map(function (oItem) {
+                var oContext = oItem.getBindingContext("ordersitemsModel");
+                return oContext.getProperty("ItemID");
+            });
+        
+            sap.m.MessageBox.confirm(  "Are you sure you want to delete the selected items?",{
+                    actions: [sap.m.MessageBox.Action.YES, sap.m.MessageBox.Action.NO],
+                    onClose: function (sAction) {
+                        if (sAction === sap.m.MessageBox.Action.YES) {
+                            // Proceed with deletion if "YES" is selected
+                            var oModel = this.getOwnerComponent().getModel();
+                            oModel.callFunction("/DeletesOrderItems", {
+                                method: "GET",
+                                urlParameters: { ItemIDs: JSON.stringify(aItemIDs) }, // Send array of ItemIDs
+                                // success: function (oData) {
+                                //     sap.m.MessageToast.show("Items deleted successfully."); 
+                                                               
+                                // }.bind(this),
+                                success: function (oData) {
+                                    sap.m.MessageToast.show("Items deleted successfully.");                                   
+                                    // Retrieve the current model
+                                    var oOrdersItemsModel = this.getView().getModel("ordersitemsModel");                               
+                                    // Get the data and filter out the deleted items
+                                    var aItemsData = oOrdersItemsModel.getData();                                   
+                                    // Remove the deleted items from the model data
+                                    var filteredItemsData = aItemsData.filter(function(item) {
+                                        return !aItemIDs.includes(item.ItemID); // Filter out deleted items
+                                    });                               
+                                    // Update the model data
+                                    oOrdersItemsModel.setData(filteredItemsData);                               
+                                    // Refresh the table to reflect changes
+                                    oTable.getBinding("items").refresh();
+                                    
+                                }.bind(this),
+                                
+                                error: function (oError) {
+                                    sap.m.MessageBox.error("An error occurred while deleting the items.");
+                                }
+                            });
+                        } else {
+                            sap.m.MessageToast.show("Deletion canceled.");
+                        }
+                    }.bind(this)
+                }
+            );
+        },
+        
+        
+        
+
+        //second
         onMulticreateSubmit: function () {
             // Get values from the form fields
             var sID = sap.ui.getCore().byId("idID").getValue();
@@ -323,7 +452,53 @@ sap.ui.define([
         // }, 
 
 
-
+ // //first
+        // onMulticreateSubmit: function () {          
+        //     // Get values from the form fields
+        //     var sID = sap.ui.getCore().byId("idID").getValue();
+        //     var sCustomerName = sap.ui.getCore().byId("idCustomerName").getValue();
+        //     var currentDate = new Date();
+        
+        //     // Create the order data object
+        //     var orderData = {
+        //         ID: sID,
+        //         OrderDate: currentDate,
+        //         CustomerName: sCustomerName
+        //     };
+        
+        //     // Convert order data to JSON string
+        //     var jsonString = JSON.stringify(orderData);      
+        //     var oModel = this.getOwnerComponent().getModel();
+        //     // Call the OData function to create the order using GET method
+        //     oModel.callFunction("/orderscreate", {
+        //         method: "GET",  
+        //         urlParameters: {
+        //             NewOrdersitemsdetailsData: jsonString  // Passing the order data as URL parameters
+        //         },
+        //         success: function (oData) {
+        //             sap.m.MessageToast.show("Order created successfully!");
+                   
+        //         },
+        //         // error: function (error) {
+        //         //     if (error.responseText && error.responseText.includes("OrderID already exists")) {
+        //         //         sap.m.MessageToast.show("The OrderID already exists. Please choose a different ID.");
+        //         //     } else {
+        //         //         sap.m.MessageToast.show("Error creating order!");
+        //         //     }
+        //         // }
+        //         error: function (error) {
+        //             var errorMessage = error.responseText;                    
+        //             // Extract the specific error message from the response
+        //             var parsedError = JSON.parse(errorMessage);
+        //             var message = parsedError.error.message.value;       
+        //             // Check if the error message contains "Order with ID"
+        //             if (message && message.includes("Order with ID")) {
+        //                 sap.m.MessageToast.show(message);  // Display the specific error message like "Order with ID 1 already exists."
+        //             } else {
+        //                 sap.m.MessageToast.show("Error creating order!");
+        //             }
+        //         }
+        //     });
 
 
 

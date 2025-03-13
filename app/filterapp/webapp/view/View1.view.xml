@@ -11,7 +11,7 @@
  <OverflowToolbar design="Transparent">
   
   
-        <SearchField id="idsearchfielditemid" liveChange="onLiveSearchitemid" placeholder="Please Enter Item ID" width="15%" ></SearchField>
+        <SearchField id="idsearchfielditemid"  change="onChangeSearchItemID"  liveChange="onLiveSearchitemid" placeholder="Please Enter Item ID" width="15%" ></SearchField>
                
                  <Label  text="Order ID:"/>
                  <Input id="idInput" placeholder="Please Enter OrderID" showValueHelp="true" valueHelpOnly="false"  width="20%" valueHelpRequest="onHandleValueHelp"
@@ -19,12 +19,14 @@
                     <!-- <Input id="idInput" placeholder="Please Enter OrderID" showValueHelp="false" valueHelpOnly="false" width="20%" liveChange="onCustomerLiveChange" showSuggestion="true"/> -->
   <ToolbarSpacer/>     
   <Button  icon="sap-icon://add" text="Create" press="OnOrderandItems" />
+   <Button  type="Reject" text="Delete" press="onDeleteOrder" />
+   <Button   text="Update" press="onUpdateOrder" />
                 </OverflowToolbar>
   
               <Table id="itemTable" 
     items="{
         path: 'ordersitemsModel>/'
-    }">
+    }"  mode="MultiSelect"  >
     <columns>
         <Column>
             <Text text="ItemID" />

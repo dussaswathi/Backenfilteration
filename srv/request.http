@@ -1,3 +1,4 @@
 ###
 GET http://localhost:4004/odata/v4/order/filteritems(OrderID='')
  GET http://localhost:4004/odata/v4/order/orderscreate(NewOrdersitemsdetailsData='')
+  GET http://localhost:4004/odata/v4/order/DeletesOrderItems(ItemIDs='')
