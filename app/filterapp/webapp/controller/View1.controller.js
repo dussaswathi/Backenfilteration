@@ -13,7 +13,16 @@ sap.ui.define([
             that = this;
             that.valuehelper();
         },
-       
+        OnOrderandItems:function(){
+            if (!that.Order_items) {
+                that.Order_items = sap.ui.xmlfragment("filterapp.fragments.Multicreate", that);
+                that.getView().addDependent(that.Order_items); 
+            }
+            that.Order_items.open();
+        },
+        onMulticreateClose:function(){
+       that.Order_items.close();
+        },
         onHandleValueHelp: function (oEvent) {
             // var oView = this.getView();
             that._sInputId = oEvent.getSource().getId(); // Store the input field ID for later use
@@ -29,7 +38,120 @@ sap.ui.define([
             }
             this.valuehelper();
         },
-
+        // //first
+        // onMulticreateSubmit: function () {          
+        //     // Get values from the form fields
+        //     var sID = sap.ui.getCore().byId("idID").getValue();
+        //     var sCustomerName = sap.ui.getCore().byId("idCustomerName").getValue();
+        //     var currentDate = new Date();
+        
+        //     // Create the order data object
+        //     var orderData = {
+        //         ID: sID,
+        //         OrderDate: currentDate,
+        //         CustomerName: sCustomerName
+        //     };
+        
+        //     // Convert order data to JSON string
+        //     var jsonString = JSON.stringify(orderData);      
+        //     var oModel = this.getOwnerComponent().getModel();
+        //     // Call the OData function to create the order using GET method
+        //     oModel.callFunction("/orderscreate", {
+        //         method: "GET",  
+        //         urlParameters: {
+        //             NewOrdersitemsdetailsData: jsonString  // Passing the order data as URL parameters
+        //         },
+        //         success: function (oData) {
+        //             sap.m.MessageToast.show("Order created successfully!");
+                   
+        //         },
+        //         // error: function (error) {
+        //         //     if (error.responseText && error.responseText.includes("OrderID already exists")) {
+        //         //         sap.m.MessageToast.show("The OrderID already exists. Please choose a different ID.");
+        //         //     } else {
+        //         //         sap.m.MessageToast.show("Error creating order!");
+        //         //     }
+        //         // }
+        //         error: function (error) {
+        //             var errorMessage = error.responseText;                    
+        //             // Extract the specific error message from the response
+        //             var parsedError = JSON.parse(errorMessage);
+        //             var message = parsedError.error.message.value;       
+        //             // Check if the error message contains "Order with ID"
+        //             if (message && message.includes("Order with ID")) {
+        //                 sap.m.MessageToast.show(message);  // Display the specific error message like "Order with ID 1 already exists."
+        //             } else {
+        //                 sap.m.MessageToast.show("Error creating order!");
+        //             }
+        //         }
+        //     });
+        // },
+    //    //second
+        onMulticreateSubmit: function () {
+            // Get values from the form fields
+            var sID = sap.ui.getCore().byId("idID").getValue();
+            var sCustomerName = sap.ui.getCore().byId("idCustomerName").getValue();
+            var currentDate = new Date();
+        
+            // Get the order items from the table
+            var orderItems = [];
+            
+            var items = sap.ui.getCore().byId("idOrderItemsTable").getItems();
+        
+            items.forEach(function (item) {
+                var cells = item.getCells();
+                var itemData = {
+                    ItemID: cells[0].getValue(),
+                    ProductName: cells[1].getValue(),
+                    Quantity: parseInt(cells[2].getValue(), 10),
+                    Price: parseFloat(cells[3].getValue()),
+                    OrderID: sID
+                };
+                orderItems.push(itemData);
+            });
+        
+            // Create the order data object
+            var orderData = {
+                ID: sID,
+                OrderDate: currentDate,
+                CustomerName: sCustomerName,
+                OrderItems: orderItems  // Include the order items in the request
+            };
+        
+            // Convert order data to JSON string
+            var jsonString = JSON.stringify(orderData);      
+            var oModel = this.getOwnerComponent().getModel();
+        
+            // Call the OData function to create the order and items
+            oModel.callFunction("/orderscreate", {
+                method: "GET",  
+                urlParameters: {
+                    NewOrdersitemsdetailsData: jsonString  // Passing the order data (including items) as URL parameters
+                },
+                success: function (oData) {
+                    sap.m.MessageToast.show("Order and items created successfully!");
+                },
+                error: function (error) {
+                    var errorMessage = error.responseText;                    
+                    // Extract the specific error message from the response
+                    var parsedError = JSON.parse(errorMessage);
+                    var message = parsedError.error.message.value;       
+        
+                    // Check if the error message contains "Order with ID"
+                    if (message && message.includes("Order with ID")) {
+                        sap.m.MessageToast.show(message);  // Display the specific error message like "Order with ID 1 already exists."
+                    } else {
+                        sap.m.MessageToast.show("Error creating order and items!");
+                    }
+                }
+            });
+        },
+        
+       
+        
+        
+        
+        
         valuehelper: function () {
             var oData = this.getOwnerComponent().getModel(); 
             oData.read("/Order", {
@@ -139,41 +261,42 @@ sap.ui.define([
                 var oBinding = oEvent.getSource().getBinding("items");
                 oBinding.filter([]); 
             }
-        }
-        
+        },
+        onAddRow: function () {
+            var oTable = sap.ui.getCore().byId("idOrderItemsTable");
+            var oItem = new sap.m.ColumnListItem({
+                cells: [
+                    new sap.m.Input({
+                        value: "",
+                        type: sap.m.InputType.Number
+                    }),
+                    new sap.m.Input({
+                        value: ""
+                    }),
+                    new sap.m.Input({
+                        value: "",
+                        type: sap.m.InputType.Number
+                    }),
+                    new sap.m.Input({
+                        value: "",
+                        type: sap.m.InputType.Number
+                    }),
+                    new sap.m.Button({
+                        icon: "sap-icon://delete",
+                        type: sap.m.ButtonType.Reject,
+                        press: function (oEvent) {
+                            var oTable = sap.ui.getCore().byId("idOrderItemsTable");
+                            oTable.removeItem(oEvent.getSource().getParent());
+                        }
+                    })
+                ]
+            });
+            oTable.addItem(oItem);
+        }, 
 
     });
 });
-  // onValueHelpDialogConfirm: function (oEvent) {
-        //     var oSelectedItem = oEvent.getParameter("selectedItem");
-        //     if (oSelectedItem) {
-        //         var sOrderID = oSelectedItem.getTitle();
-        //         var oInput = this.getView().byId(this._sInputId); 
-        //         oInput.setValue(sOrderID);
-        //         // Now, call the backend to fetch filtered OrderItems based on the selected OrderID
-        //         var oModel = this.getOwnerComponent().getModel();
-              
-        //         oModel.callFunction("/filteritems", {
-        //             method: "GET",
-        //             urlParameters: {
-        //                 OrderID: sOrderID  // Corrected the passing of the OrderID
-        //             },
-        //             success: function (oData, response) {
-        //                 var oTable = that.getView().byId("itemTable");
-        //                 var oBinding = oTable.getBinding("items");
-        //                 oBinding.setModel(new JSONModel(oData));
-        //                 var oOrdersitemsModel = new JSONModel(oData.results);
-        //                 that.getView().setModel(oOrdersitemsModel, "ordersitemsModel");
-        //             },
-        //             error: function (oError) {
-        //                 sap.m.MessageToast.show("Could not load filtered OrderItems!");
-        //                 console.error("Error loading filtered OrderItems:", oError);
-        //             }
-        //         });
-                
-                
-        //     }
-        // },
+  
 
  // onCustomerLiveChange: function (oEvent) {
         //     var sOrderID = oEvent.getParameter("value"); // Get the OrderID entered by the user

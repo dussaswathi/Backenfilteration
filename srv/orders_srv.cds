@@ -7,4 +7,7 @@ service OrderService {
 
    // function filterorderitemsByOrderID(OrderID : String) returns OrderItems;
    function filteritems(OrderID:String)  returns OrderItems;
+    // function createOrder(OrderID: String, CustomerName: String, OrderDate: Date) returns Order;
+    //  function createOrder(NewOrdersitemsdetailsData: String);
+    function orderscreate(NewOrdersitemsdetailsData: String) returns String;
 }

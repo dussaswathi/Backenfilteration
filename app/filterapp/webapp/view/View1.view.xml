@@ -10,13 +10,15 @@
 
  <OverflowToolbar design="Transparent">
   
-  <Label  text="Order ID:"/>
-        <!-- <SearchField id="idsearchfielditemid" liveChange="onLiveSearchitemid" placeholder="Please Enter Item ID" width="20%" ></SearchField>
-                 <ToolbarSpacer/>   -->   
+  
+        <SearchField id="idsearchfielditemid" liveChange="onLiveSearchitemid" placeholder="Please Enter Item ID" width="15%" ></SearchField>
+               
+                 <Label  text="Order ID:"/>
                  <Input id="idInput" placeholder="Please Enter OrderID" showValueHelp="true" valueHelpOnly="false"  width="20%" valueHelpRequest="onHandleValueHelp"
 					suggestionItemSelected="onSuggestionItemSelected" liveChange="onCustomerLiveChange" showSuggestion="true"/>
                     <!-- <Input id="idInput" placeholder="Please Enter OrderID" showValueHelp="false" valueHelpOnly="false" width="20%" liveChange="onCustomerLiveChange" showSuggestion="true"/> -->
-
+  <ToolbarSpacer/>     
+  <Button  icon="sap-icon://add" text="Create" press="OnOrderandItems" />
                 </OverflowToolbar>
   
               <Table id="itemTable" 
