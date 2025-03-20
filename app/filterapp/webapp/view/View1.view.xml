@@ -6,11 +6,14 @@
         <App id="apap">
 <pages>
     <Page id="page" title="Orders_Orderitems">
+   <Toolbar design="Solid"  height="6%" >
+                       <ToolbarSpacer/> 
+                       
+                    <Button  icon="sap-icon://add" text="Create" press="OnOrderandItems" />
+                    </Toolbar>
 <content>
 
- <OverflowToolbar design="Transparent">
-  
-  
+ <OverflowToolbar design="Transparent" height="7%" >
         <SearchField id="idsearchfielditemid"  change="onChangeSearchItemID"  liveChange="onLiveSearchitemid" placeholder="Please Enter Item ID" width="15%" ></SearchField>
                
                  <Label  text="Order ID:"/>
@@ -18,15 +21,18 @@
 					suggestionItemSelected="onSuggestionItemSelected" liveChange="onCustomerLiveChange" showSuggestion="true"/>
                     <!-- <Input id="idInput" placeholder="Please Enter OrderID" showValueHelp="false" valueHelpOnly="false" width="20%" liveChange="onCustomerLiveChange" showSuggestion="true"/> -->
   <ToolbarSpacer/>     
-  <Button  icon="sap-icon://add" text="Create" press="OnOrderandItems" />
-   <Button  type="Reject" text="Delete" press="onDeleteOrder" />
-   <Button   text="Update" press="onUpdateOrder" />
+  <!-- <Button  icon="sap-icon://add" text="Create" press="OnOrderandItems" /> -->
+   <Button  id="idcreateitems"  icon="sap-icon://add" text="Additems" press="Oncreateitems"  enabled="false" />
+   <Button  id="idbtnDelete" type="Reject" text="Delete" press="onDeleteOrder" enabled="true" />
+   <Button   id="idbtnUpdate" text="Update" press="onUpdateOrder" enabled="true" />
                 </OverflowToolbar>
   
-              <Table id="itemTable" 
+     <Table id="itemTable" 
     items="{
         path: 'ordersitemsModel>/'
     }"  mode="MultiSelect"  >
+
+
     <columns>
         <Column>
             <Text text="ItemID" />
@@ -53,7 +59,6 @@
         </ColumnListItem>
     </items>
 </Table>
-
           </content>
          </Page>
         </pages>

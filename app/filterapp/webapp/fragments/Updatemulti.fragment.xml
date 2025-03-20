@@ -1,16 +1,17 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
     <Dialog title="Multi-Update Items" contentWidth="500px">
         <content>
-            <f:SimpleForm title="Orders" layout="GridLayout">
+             <!-- <f:SimpleForm title="Orders" layout="GridLayout">
                 <Label text="ID" />
-                <Input id="idOrderID4Update1" placeholder="Enter Order ID" width="300px" editable="false" liveChange="onIDMultiLiveChange" />
+                <Input id="idOrderID4Update1"  width="300px" editable="false" liveChange="onIDMultiLiveChange" />
 
                 <Label text="Customer Name" />
-                <Input id="idCustomerName1Update1" placeholder="Enter Customer Name" width="300px" editable="true" />
+                <Input id="idCustomerName1Update1"   width="300px" editable="true" />
 
-                <Label text="Order Date" />
-                <Input id="idOrderDate1Update1" value="dd-MM-yyyy" placeholder="Enter Order Date" width="300px" editable="false" />
-            </f:SimpleForm>
+                 <Label text="Order Date" />
+                <Input id="idOrderDate1Update1" value="dd-MM-yyyy" placeholder="Enter Order Date" width="300px" editable="false" /> 
+            </f:SimpleForm> -->
+
             <Table id="idMultiUpdateTable" items="{updateModel>/}">
                 <columns>
                     <Column>

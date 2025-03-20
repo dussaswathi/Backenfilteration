@@ -20,12 +20,12 @@
                     </layoutData>
                 </Input>
 
-                <Label text="Order Date" />
+                <!-- <Label text="Order Date" />
                 <Input id="idOrderDate1" value="dd-MM-yyyy"  placeholder="Enter Order Date" width="300px" editable="false">
                     <layoutData>
                         <l:GridData span="L4 M4" />
                     </layoutData>
-                </Input>
+                </Input> -->
  
 
             </f:SimpleForm>

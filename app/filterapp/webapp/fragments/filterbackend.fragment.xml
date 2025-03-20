@@ -1,6 +1,22 @@
-<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+<!-- <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
 	<SelectDialog id="idSelectDialog" title="OrderID'S" items="{valuehelpmodel>/}" liveChange="_handleLiveChange"
 		confirm="onValueHelpDialogConfirm" cancel="_handleValueHelpClose" afterOpen="onDialogAfterOpen">
 		<StandardListItem title="{valuehelpmodel>ID}"  description="{valuehelpmodel>CustomerName}"  />
 	</SelectDialog>
+</core:FragmentDefinition> -->
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+    <SelectDialog 
+        id="idSelectDialog" 
+        title="OrderID'S" 
+        items="{valuehelpmodel>/results}" 
+        liveChange="_handleLiveChange"
+        confirm="onValueHelpDialogConfirm" 
+        cancel="_handleValueHelpClose" 
+        afterOpen="onDialogAfterOpen">
+        
+        <StandardListItem 
+            title="{valuehelpmodel>ID}"  
+            description="{valuehelpmodel>CustomerName}" />
+            
+    </SelectDialog>
 </core:FragmentDefinition>

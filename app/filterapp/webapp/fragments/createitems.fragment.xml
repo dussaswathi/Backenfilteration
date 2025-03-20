@@ -1,0 +1,52 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form"
+    xmlns:u="sap.ui.unified">
+    
+    <Dialog id="idOrderDetailsDialog1" title="Order_Items " contentWidth="600px">
+        <content>
+                <Table id="idOrderItemsTable1"  >
+              <headerToolbar>
+					<Toolbar>
+						<!-- <Title text=" Order Items "/> -->
+						<ToolbarSpacer/>
+						<Button text="Add" icon="sap-icon://add" press="onAddNewitemsRow"/>
+					</Toolbar>
+				</headerToolbar>
+
+                    <columns>
+                        <Column>
+                            <Text text="ItemID" />
+                        </Column>
+                        <Column>
+                            <Text text="Product Name" />
+                        </Column>
+                        <Column>
+                            <Text text="Quantity" />
+                        </Column>
+                        <Column>
+                            <Text text="Price" />
+                        </Column>
+                        <Column>
+                        <Text text="Actions" />
+                    </Column>
+                    </columns>
+                    <items>
+                         <ColumnListItem>
+                            <cells>
+                            <Input value="{ItemID}" id="iditeminput1" />
+                            <Input value="{ProductName}" id="idproductnameinput1" />
+                            <Input value="{Quantity}" id="idquantityinput1" type="Number" />
+                            <Input value="{Price}" id="idpriceinput1" type="Number" />                            
+                            </cells>
+                        </ColumnListItem> 
+                    </items>
+                </Table>
+        </content>
+        <beginButton>
+            <Button text="Submit" type="Emphasized" press="onitemscreateSubmit"/>
+        </beginButton>
+        <endButton>
+            <Button text="Close" type="Reject" press="onitemscreateClose"/>
+        </endButton>
+    </Dialog>
+
+</core:FragmentDefinition>
