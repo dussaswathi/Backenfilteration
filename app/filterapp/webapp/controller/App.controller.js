@@ -8,6 +8,61 @@ sap.ui.define([
       }
   });
 });
+
+        // onitemscreateSubmit: function () {
+        //     var sOrderID=that.getView().byId("idInput").getValue();
+        //     var items = sap.ui.getCore().byId("idOrderItemsTable1").getItems();
+        //     var orderItems = [];
+        //     var validationErrors = [];
+        //     var orderData = {
+        //         OrderItems: orderItems  
+        //     };
+        //     items.forEach(function (item) {
+        //         var cells = item.getCells();
+        //         var itemData = {
+        //             ItemID: cells[0].getValue(),
+        //             ProductName: cells[1].getValue(),
+        //             Quantity: parseInt(cells[2].getValue(), 10),
+        //             Price: parseFloat(cells[3].getValue()),
+        //             OrderID: sOrderID
+        //         };
+        //         orderItems.push(itemData);
+        //     });
+
+        //     // Convert order data to JSON string
+        //     var jsonString = JSON.stringify(orderData);      
+        //     var oModel = this.getOwnerComponent().getModel();
+        //     // Call the OData function to create the order and items
+        //     oModel.callFunction("/Creatingitemsforexistingorderid", {
+        //         method: "GET",  
+        //         urlParameters: { // Passing the order data (including items) as URL parameters
+        //             OrderitemsData: jsonString 
+        //         },
+        //         success: function (oData) {
+        //             sap.m.MessageToast.show(" items created successfully!");
+        //             // that.Order_items.close();
+        //             that.onitemscreateClose();
+        //         },
+        //         // error: function (error) {
+        //         //     var errorMessage = error.responseText;                    
+        //         //     // Extract the specific error message from the response
+        //         //     var parsedError = JSON.parse(errorMessage);
+        //         //     var message = parsedError.error.message.value;       
+        //         //     // Check if the error message contains "Order with ID"
+        //         //     if (message && message.includes("Order with ID")) {
+        //         //         sap.m.MessageToast.show(message);  // Display the specific error message
+        //         //     } else {
+        //         //         sap.m.MessageToast.show("Error creating order and items!");
+        //         //     }
+        //         // }
+        //         error: function (error) {
+        //             var errorMessage = error.responseText;
+        //             var parsedError = JSON.parse(errorMessage);
+        //             var message = parsedError.error.message.value;
+        //             sap.m.MessageToast.show(message || "Error creating order and items!");
+        //         }
+        //     });
+        // },
  // onMulticreateSubmit: function () {
         //     var sID = sap.ui.getCore().byId("idID").getValue();
         //     var sCustomerName = sap.ui.getCore().byId("idCustomerName").getValue();

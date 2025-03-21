@@ -24,8 +24,115 @@ sap.ui.define([
             that.Oncreateitems_order.open();
         },
         onitemscreateClose:function(){
+            sap.ui.getCore().byId("iditeminput1").setValue("");
+            sap.ui.getCore().byId("idproductnameinput1").setValue("");
+            sap.ui.getCore().byId("idquantityinput1").setValue("");
+            sap.ui.getCore().byId("idpriceinput1").setValue("");
+
             that.Oncreateitems_order.close();
+           
+             
+           
         },
+
+        onitemscreateSubmit: function () {
+            var that = this;
+            var sOrderID = this.getView().byId("idInput").getValue();
+            var items = sap.ui.getCore().byId("idOrderItemsTable1").getItems();
+            var oModel = this.getOwnerComponent().getModel();
+            var ordersitemsModel = this.getView().getModel("ordersitemsModel"); // Get the table model
+        
+            var orderItems = [];
+            var validationErrors = [];
+        
+            var orderData = {
+                OrderItems: orderItems  
+            };
+            // Read existing Order Items to check for duplicates
+            oModel.read("/OrderItems", {
+                success: function (oData) {
+                    var existingItemIDs = new Set(oData.results.map(function (item) {
+                        return item.ItemID.toString();
+                    }));
+                    // Loop through all items in the table
+                    items.forEach(function (item, index) {
+                        var cells = item.getCells();
+                        var itemID = cells[0].getValue();
+                        var productName = cells[1].getValue();
+                        var quantity = cells[2].getValue();
+                        var price = cells[3].getValue();
+        
+                        if (!itemID || isNaN(itemID) || itemID.trim() === "") {
+                            validationErrors.push(`Row ${index + 1}: Item ID must be a valid number.`);
+                        } else if (existingItemIDs.has(itemID)) {
+                            validationErrors.push(`Row ${index + 1}: Item ID '${itemID}' already exists.`);
+                        }
+                        if (!productName || productName.trim() === "") {
+                            validationErrors.push(`Row ${index + 1}: Product Name is required.`);
+                        }
+                        if (!quantity || isNaN(quantity) || parseInt(quantity, 10) <= 0) {
+                            validationErrors.push(`Row ${index + 1}: Quantity must be a valid positive number.`);
+                        }
+                        if (!price || isNaN(price) || parseFloat(price) <= 0) {
+                            validationErrors.push(`Row ${index + 1}: Price must be a valid positive number.`);
+                        }
+                        // If no validation errors, add item to orderItems array
+                        if (validationErrors.length === 0) {
+                            var itemData = {
+                                ItemID: itemID,
+                                ProductName: productName,
+                                Quantity: parseInt(quantity, 10),
+                                Price: parseFloat(price),
+                                OrderID: sOrderID
+                            };
+                            orderItems.push(itemData);
+                        }
+                    });
+        
+                    if (validationErrors.length > 0) {
+                        sap.m.MessageBox.error(validationErrors.join("\n"));
+                        return;
+                    }
+        
+                    // Convert order data to JSON string
+                    var jsonString = JSON.stringify(orderData);
+                    oModel.callFunction("/Creatingitemsforexistingorderid", {
+                        method: "GET",
+                        urlParameters: {
+                            OrderitemsData: jsonString
+                        },
+                        success: function () {
+                            sap.m.MessageToast.show("Items created successfully!");
+                            //  Add new items to ordersitemsModel manually before refreshing
+                            var existingData = ordersitemsModel.getData();
+                            if (!existingData || !existingData.length) {
+                                existingData = [];
+                            }
+                            existingData = existingData.concat(orderItems); // Append new items
+                            ordersitemsModel.setData(existingData); // Update the model
+        
+                            var oTable = that.byId("itemTable");
+                            oTable.getBinding("items").refresh(); // Refresh table
+                            that.onitemscreateClose();
+                        },
+                        error: function (error) {
+                            var errorMessage = error.responseText;
+                            var parsedError = JSON.parse(errorMessage);
+                            var message = parsedError.error.message.value;
+                            sap.m.MessageToast.show(message || "Error creating order and items!");
+                        }
+                    });
+                },
+                error: function () {
+                    sap.m.MessageToast.show("Error reading existing order items!");
+                }
+            });
+        },        
+
+       
+       
+      
+        
         onAddNewitemsRow: function () {
             var oTable = sap.ui.getCore().byId("idOrderItemsTable1");
             var oItem = new sap.m.ColumnListItem({
@@ -281,6 +388,7 @@ sap.ui.define([
         var sID = sap.ui.getCore().byId("idID").getValue();
         var sCustomerName = sap.ui.getCore().byId("idCustomerName").getValue();
         var items = sap.ui.getCore().byId("idOrderItemsTable").getItems();
+        var ordersitemsModel = this.getView().getModel("ordersitemsModel");
         var currentDate = new Date();
     
         var orderItems = [];
@@ -299,10 +407,7 @@ sap.ui.define([
         if (!sCustomerName || sCustomerName.trim() === "") {
             validationErrors.push("Customer Name is required and cannot be empty.");
         }   
-        // if (validationErrors.length > 0) {
-        //     sap.m.MessageBox.error(validationErrors.join("\n"));
-        //     return;
-        // }
+      
         var oModel = this.getOwnerComponent().getModel();
         // Fetch existing OrderItems from backend and validate new items
         oModel.read("/OrderItems", {
@@ -359,9 +464,18 @@ sap.ui.define([
                     urlParameters: { NewOrdersitemsdetailsData: jsonString },
                     success: function () {
                         sap.m.MessageToast.show("Order and items created successfully!");
-                        // that.Order_items.close();
-                        that.onMulticreateClose(); 
+                        that.onMulticreateClose();
+                        var existingData = ordersitemsModel.getData();
+                        if (!existingData || !existingData.length) {
+                            existingData = [];
+                        }
+                        existingData = existingData.concat(orderItems); // Append new items
+                        ordersitemsModel.setData(existingData); // Update the model
+    
+                        var oTable = that.byId("itemTable");
+                        oTable.getBinding("items").refresh(); // Refresh table
                     },
+                  
                     error: function (error) {
                         var errorMessage = error.responseText;
                         var parsedError = JSON.parse(errorMessage);
@@ -403,104 +517,97 @@ sap.ui.define([
             }
         },
       
+    
+       
         onValueHelpDialogConfirm: function (oEvent) {
             var that = this;
             var oSelectedItem = oEvent.getParameter("selectedItem");
+            var oTable = that.getView().byId("itemTable"); // Table for displaying the order items
+            var oCreateButton = that.getView().byId("idcreateitems"); // Button to create items
+        
             if (oSelectedItem) {
-                var sOrderID = oSelectedItem.getTitle();
-                var oInput = this.getView().byId(this._sInputId); 
-                oInput.setValue(sOrderID);
-                var oModel = this.getOwnerComponent().getModel();       
+                var sOrderID = oSelectedItem.getTitle(); // Get the selected OrderID
+                var oInput = this.getView().byId(this._sInputId);
+                oInput.setValue(sOrderID); // Set selected OrderID in input field
+        
+                var oModel = this.getOwnerComponent().getModel();
+        
+                // Call the backend service to fetch filtered items for the selected OrderID
                 oModel.callFunction("/filteritems", {
                     method: "GET",
-                    urlParameters: {
-                        OrderID: sOrderID
-                    },
-                    success: function (oData, response) {
-                        // Check if we have valid data in oData
+                    urlParameters: { OrderID: sOrderID },
+                    success: function (oData) {
+                        // If data is returned, update the model and refresh the table
                         if (oData.results && oData.results.length > 0) {
-                            var oOrdersitemsModel = new JSONModel(oData.results);  // Use results directly
-                            that.getView().setModel(oOrdersitemsModel, "ordersitemsModel"); 
-                            // var oCreateButton = that.getView().byId("idcreateitems");
-                            // oCreateButton.setEnabled(true);       
+                            var oOrdersitemsModel = new JSONModel(oData.results); // Create model with the filtered results
+                            that.getView().setModel(oOrdersitemsModel, "ordersitemsModel"); // Set the model for the view
+                            oTable.setModel(oOrdersitemsModel); // Bind the data to the table
+        
+                            // Enable the "Create" button
+                            oCreateButton.setEnabled(true);
+                            oTable.getBinding("items").refresh(); // Refresh the table to show the updated data
                         } else {
+                            // Show message if no data is found, and clear the table
                             MessageToast.show("No order items found for the selected OrderID.");
-                            // var oCreateButton = that.getView().byId("idcreateitems");
-                            // oCreateButton.setEnabled(true);
+                            // Clear the table data (reset the model to an empty array)
+                            that.getView().setModel(new JSONModel([]), "ordersitemsModel");
+                            oTable.setModel(new JSONModel([])); // Set an empty model for the table
+        
+                            // Optionally, enable the "Create" button (even if no data is found)
+                            oCreateButton.setEnabled(true);
                         }
-                       // Enable the button
                     },
                     error: function (oError) {
+                        // Handle error and clear the table data
                         MessageToast.show("Could not load filtered OrderItems!");
                         console.error("Error loading filtered OrderItems:", oError);
-                        // var oCreateButton = that.getView().byId("idcreateitems");
-                        // oCreateButton.setEnabled(true);
+                        // Clear the table data on error
+                        that.getView().setModel(new JSONModel([]), "ordersitemsModel");
+                        oTable.setModel(new JSONModel([])); // Set an empty model for the table
+                        oCreateButton.setEnabled(false); // Optionally, disable the "Create" button
                     }
                 });
             }
         },
-       
         
-        // onCustomerLiveChange: function (oEvent) {
-        //     var that = this;
-        //     var sOrderID = oEvent.getParameter("value"); 
-        //     var oView = this.getView();
-        //     if (sOrderID) {
-        //         var oModel = this.getOwnerComponent().getModel(); 
-        //         oModel.callFunction("/filteritems", {
-        //             method: "GET",
-        //             urlParameters: { OrderID: sOrderID }, // Send OrderID to backend
-        //             success: function (oData) {
-        //                 // Get the results array, or an empty array if no results
-        //                 var aResults = oData.results || []; 
-        //                 if (aResults.length === 0) {
-        //                     MessageToast.show("No records found for the given OrderID."); 
-        //                 } // Use the results (or empty array if no results)
-        //                 var oOrdersitemsModel = new JSONModel(aResults);
-        //                 oView.setModel(oOrdersitemsModel, "ordersitemsModel"); 
-        //             },
-        //             error: function (err) {
-        //                 MessageToast.show("Could not load filtered OrderItems!");
-        //                 oView.setModel(new JSONModel([]), "ordersitemsModel");
-        //             }
-        //         });
-        //     } else {
-        //         // If input is empty, clear the table
-        //         oView.setModel(new JSONModel([]), "ordersitemsModel");
-        //     }
-        // },
         onCustomerLiveChange: function (oEvent) {
             var that = this;
             var sOrderID = oEvent.getParameter("value"); 
             var oView = this.getView();
             var oCreateButton = that.getView().byId("idcreateitems");
-            oCreateButton.setEnabled(false); 
+            oCreateButton.setEnabled(false); // Disable the button initially
         
             if (sOrderID) {
-                var oModel = this.getOwnerComponent().getModel(); 
+                var oModel = this.getOwnerComponent().getModel();
+        
+                // Call the backend service to fetch filtered items based on the OrderID
                 oModel.callFunction("/filteritems", {
                     method: "GET",
-                    urlParameters: { OrderID: sOrderID }, // Send OrderID to backend
+                    urlParameters: { OrderID: sOrderID },
                     success: function (oData) {
-                        // Get the results array, or an empty array if no results
-                        var aResults = oData.results || []; 
+                        var aResults = oData.results || []; // Handle the case where no results are returned
                         if (aResults.length === 0) {
                             MessageToast.show("No records found for the given OrderID.");
-                        } else { // Use the results to update the model
-                            var oOrdersitemsModel = new JSONModel(aResults);
+                            // Clear the table data if no results
+                            oView.setModel(new JSONModel([]), "ordersitemsModel");
+                            oCreateButton.setEnabled(false); // Disable the button if no data
+                        } else {
+                            var oOrdersitemsModel = new JSONModel(aResults); // Create a new model with the filtered results
                             oView.setModel(oOrdersitemsModel, "ordersitemsModel");
-                            // Enable the "Additems" button only if data is found
-                            oCreateButton.setEnabled(true); 
+                            oCreateButton.setEnabled(true); // Enable the "Create" button
                         }
                     },
                     error: function (err) {
                         MessageToast.show("Could not load filtered OrderItems!");
+                        // Clear the table data and reset the button in case of error
                         oView.setModel(new JSONModel([]), "ordersitemsModel");
+                        oCreateButton.setEnabled(false); // Disable the button on error
                     }
                 });
-            } else { // If input is empty, clear the table and disable the button
+            } else {
+                // If the input is empty, clear the table and disable the button
                 oView.setModel(new JSONModel([]), "ordersitemsModel");
-                oCreateButton.setEnabled(false); 
+                oCreateButton.setEnabled(false); // Disable the button when no OrderID is entered
             }
         },
         
@@ -633,4 +740,102 @@ sap.ui.define([
         //     });
         // },
         
- 
+     // onValueHelpDialogConfirm: function (oEvent) {
+        //     var that = this;
+        //     var oSelectedItem = oEvent.getParameter("selectedItem");
+        //     if (oSelectedItem) {
+        //         var sOrderID = oSelectedItem.getTitle();
+        //         var oInput = this.getView().byId(this._sInputId); 
+        //         oInput.setValue(sOrderID);
+        //         var oModel = this.getOwnerComponent().getModel();       
+        //         oModel.callFunction("/filteritems", {
+        //             method: "GET",
+        //             urlParameters: {
+        //                 OrderID: sOrderID
+        //             },
+        //             success: function (oData, response) {
+        //                 // Check if we have valid data in oData
+        //                 if (oData.results && oData.results.length > 0) {
+        //                     var oOrdersitemsModel = new JSONModel(oData.results);  // Use results directly
+        //                     that.getView().setModel(oOrdersitemsModel, "ordersitemsModel"); 
+        //                     var oCreateButton = that.getView().byId("idcreateitems");
+        //                     oCreateButton.setEnabled(true);       
+        //                 } else {
+        //                     // var oTable = this.byId("itemTable");
+        //                     // oTable.getBinding("items").refresh();  
+        //                     MessageToast.show("No order items found for the selected OrderID.");
+        //                     var oCreateButton = that.getView().byId("idcreateitems");
+        //                     oCreateButton.setEnabled(true);
+        //                 }
+        //             },
+        //             error: function (oError) {
+        //                 MessageToast.show("Could not load filtered OrderItems!");
+        //                 console.error("Error loading filtered OrderItems:", oError);
+                       
+        //             }
+        //         });
+        //     }
+        // },
+
+         // // onCustomerLiveChange: function (oEvent) {
+        // //     var that = this;
+        // //     var sOrderID = oEvent.getParameter("value"); 
+        // //     var oView = this.getView();
+        // //     if (sOrderID) {
+        // //         var oModel = this.getOwnerComponent().getModel(); 
+        // //         oModel.callFunction("/filteritems", {
+        // //             method: "GET",
+        // //             urlParameters: { OrderID: sOrderID }, // Send OrderID to backend
+        // //             success: function (oData) {
+        // //                 // Get the results array, or an empty array if no results
+        // //                 var aResults = oData.results || []; 
+        // //                 if (aResults.length === 0) {
+        // //                     MessageToast.show("No records found for the given OrderID."); 
+        // //                 } // Use the results (or empty array if no results)
+        // //                 var oOrdersitemsModel = new JSONModel(aResults);
+        // //                 oView.setModel(oOrdersitemsModel, "ordersitemsModel"); 
+        // //             },
+        // //             error: function (err) {
+        // //                 MessageToast.show("Could not load filtered OrderItems!");
+        // //                 oView.setModel(new JSONModel([]), "ordersitemsModel");
+        // //             }
+        // //         });
+        // //     } else {
+        // //         // If input is empty, clear the table
+        // //         oView.setModel(new JSONModel([]), "ordersitemsModel");
+        // //     }
+        // // },
+        // onCustomerLiveChange: function (oEvent) {
+        //     var that = this;
+        //     var sOrderID = oEvent.getParameter("value"); 
+        //     var oView = this.getView();
+        //     var oCreateButton = that.getView().byId("idcreateitems");
+        //     oCreateButton.setEnabled(false); 
+        
+        //     if (sOrderID) {
+        //         var oModel = this.getOwnerComponent().getModel(); 
+        //         oModel.callFunction("/filteritems", {
+        //             method: "GET",
+        //             urlParameters: { OrderID: sOrderID }, // Send OrderID to backend
+        //             success: function (oData) {
+        //                 // Get the results array, or an empty array if no results
+        //                 var aResults = oData.results || []; 
+        //                 if (aResults.length === 0) {
+        //                     MessageToast.show("No records found for the given OrderID.");
+        //                 } else { // Use the results to update the model
+        //                     var oOrdersitemsModel = new JSONModel(aResults);
+        //                     oView.setModel(oOrdersitemsModel, "ordersitemsModel");
+        //                     // Enable the "Additems" button only if data is found
+        //                     oCreateButton.setEnabled(true); 
+        //                 }
+        //             },
+        //             error: function (err) {
+        //                 MessageToast.show("Could not load filtered OrderItems!");
+        //                 oView.setModel(new JSONModel([]), "ordersitemsModel");
+        //             }
+        //         });
+        //     } else { // If input is empty, clear the table and disable the button
+        //         oView.setModel(new JSONModel([]), "ordersitemsModel");
+        //         oCreateButton.setEnabled(false); 
+        //     }
+        // },

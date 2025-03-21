@@ -7,19 +7,19 @@
 <pages>
     <Page id="page" title="Orders_Orderitems">
    <Toolbar design="Solid"  height="6%" >
-                       <ToolbarSpacer/> 
-                       
-                    <Button  icon="sap-icon://add" text="Create" press="OnOrderandItems" />
+    <SearchField id="idsearchfielditemid"  change="onChangeSearchItemID"  liveChange="onLiveSearchitemid" placeholder="Please Enter Item ID" width="15%" ></SearchField>
+    <Label  text="Order ID:"/>
+    <Input id="idInput" placeholder="Please Enter OrderID" showValueHelp="true" valueHelpOnly="false"  width="20%" valueHelpRequest="onHandleValueHelp"
+    suggestionItemSelected="onSuggestionItemSelected" liveChange="onCustomerLiveChange" showSuggestion="true"/>
+        <ToolbarSpacer/> 
+     
+      <Button  icon="sap-icon://add" text="CreateOrderID" press="OnOrderandItems" />
+       <Button  type="Reject" text="DeleteOrderID" press="OnDeleteOrderID" />
                     </Toolbar>
 <content>
 
  <OverflowToolbar design="Transparent" height="7%" >
-        <SearchField id="idsearchfielditemid"  change="onChangeSearchItemID"  liveChange="onLiveSearchitemid" placeholder="Please Enter Item ID" width="15%" ></SearchField>
-               
-                 <Label  text="Order ID:"/>
-                 <Input id="idInput" placeholder="Please Enter OrderID" showValueHelp="true" valueHelpOnly="false"  width="20%" valueHelpRequest="onHandleValueHelp"
-					suggestionItemSelected="onSuggestionItemSelected" liveChange="onCustomerLiveChange" showSuggestion="true"/>
-                    <!-- <Input id="idInput" placeholder="Please Enter OrderID" showValueHelp="false" valueHelpOnly="false" width="20%" liveChange="onCustomerLiveChange" showSuggestion="true"/> -->
+       
   <ToolbarSpacer/>     
   <!-- <Button  icon="sap-icon://add" text="Create" press="OnOrderandItems" /> -->
    <Button  id="idcreateitems"  icon="sap-icon://add" text="Additems" press="Oncreateitems"  enabled="false" />

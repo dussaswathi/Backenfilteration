@@ -4,32 +4,20 @@
     <Dialog id="idOrderDetailsDialog" title="Orders_OrderItems " contentWidth="600px">
         <content>
            
-            <f:SimpleForm   title="Orders"   layout="GridLayout">
-                
-                <Label text=" ID"	/>
+            <f:SimpleForm   title="Orders"   layout="GridLayout">  
+                <Label text="ID"/>
                 <Input id="idID"  placeholder="Enter Order ID" width="300px" type="Number" liveChange="onIDMultiLiveChange">
                     <layoutData>
                         <l:GridData span="L4 M4" />
                     </layoutData>
                 </Input>
-
                 <Label text="Customer Name" />
                 <Input id="idCustomerName"  placeholder="Enter Customer Name" width="300px" editable="true">
                     <layoutData>
                         <l:GridData span="L4 M4" />
                     </layoutData>
                 </Input>
-
-                <!-- <Label text="Order Date" />
-                <Input id="idOrderDate1" value="dd-MM-yyyy"  placeholder="Enter Order Date" width="300px" editable="false">
-                    <layoutData>
-                        <l:GridData span="L4 M4" />
-                    </layoutData>
-                </Input> -->
- 
-
             </f:SimpleForm>
-
                 <Table id="idOrderItemsTable"  >
               <headerToolbar>
 					<Toolbar>
@@ -38,7 +26,6 @@
 						<Button text="Add" icon="sap-icon://add" press="onAddRow"/>
 					</Toolbar>
 				</headerToolbar>
-
                     <columns>
                         <Column>
                             <Text text="ItemID" />
