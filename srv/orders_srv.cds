@@ -13,5 +13,6 @@ service OrderService {
     function UpdateOrderItems(UpdatedItems : String)          returns String;
     // function RetervingORdersData(OrderID : String)            returns String;
     function Creatingitemsforexistingorderid(OrderitemsData:String) returns String;
+    function deleteorderidanditems(OrderID : String)          returns String;
 
 }

@@ -30,8 +30,30 @@ module.exports = srv => {
     //         return JSON.stringify()
     //     }
     // });
-
-
+    srv.on("deleteorderidanditems", async req => {
+        const OrderID = req.data.OrderID;
+        // Ensure OrderID is provided
+        if (!OrderID) {
+            return req.reject(400, "OrderID is required");
+        }// Start a database transaction to delete OrderItems and then the Order
+        try { // Start the transaction
+            await cds.transaction(req).run([
+                // Delete OrderItems first (to maintain referential integrity if needed)
+                DELETE.from("orderstable.OrderItems").where({ OrderID: OrderID }),
+                // Then, delete the Order record
+                DELETE.from("orderstable.Order").where({ ID: OrderID })
+            ]);
+            // Return a success message after the transaction
+            return { message: `Order ${OrderID} and its items deleted successfully!` };
+        } catch (err) {
+            // Handle error if something goes wrong
+            console.error(err);
+            req.reject(500, "Error deleting the order and associated items");
+        }
+    });
+    
+   
+    
 
     srv.on('orderscreate', async (req) => {
         let parsedData;

@@ -127,10 +127,51 @@ sap.ui.define([
                     sap.m.MessageToast.show("Error reading existing order items!");
                 }
             });
-        },        
+        },   
 
        
-       
+        OnDeleteOrderID: function () {
+            var that = this;
+            var sOrderID = that.getView().byId("idInput").getValue();  
+            if (!sOrderID) {
+                MessageToast.show("Please enter a valid OrderID.");
+                return;
+            }
+            sap.m.MessageBox.confirm(
+                "Are you sure you want to delete this order and its associated items?", 
+                {
+                icon: sap.m.MessageBox.Icon.WARNING, 
+                title: "Delete Order", 
+                actions: [sap.m.MessageBox.Action.YES, sap.m.MessageBox.Action.NO], 
+                onClose: function (sAction) {
+                // If user clicks YES, proceed with deletion
+                if (sAction === sap.m.MessageBox.Action.YES) {
+                    var oModel = that.getOwnerComponent().getModel(); 
+                    oModel.callFunction("/deleteorderidanditems", {
+                        method: "GET",
+                        urlParameters: {
+                            OrderID: sOrderID 
+                        },
+                        success: function (oData) {
+                            MessageToast.show("Order and associated items deleted successfully!");
+                            var oTable = that.getView().byId("itemTable"); 
+                            // Create a new empty model to clear the table
+                            var oEmptyModel = new JSONModel([]);
+                            oTable.setModel(oEmptyModel);  // Set the empty model to the table
+                            that.getView().setModel(oEmptyModel, "ordersitemsModel");
+                            that.getView().byId("idInput").setValue(""); 
+                            that.getView().byId("idcreateitems").setEnabled(false); 
+                        },
+                        error: function (oError) {
+                            MessageToast.show("Error deleting order and items.");
+                        }
+                    });
+                }
+            }
+        }
+            );
+        },
+        
       
         
         onAddNewitemsRow: function () {
@@ -219,57 +260,160 @@ sap.ui.define([
         }
         this._oMultiUpdateFragment.close();
         },
+        // onUpdateOrder: function (oEvent) {
+        //     var oTable = this.byId("itemTable");
+        //     if (!oTable) {
+        //         MessageToast.show("Table not found.");
+        //         return;
+        //     }       
+        //     var aSelectedItems = oTable.getSelectedItems();
+        //     if (aSelectedItems.length === 0) {
+        //         MessageToast.show("Please select at least one item to update.");
+        //         return;
+        //     }       
+        //     // Create the update fragment only once
+        //     if (!this._oMultiUpdateFragment) {
+        //         this._oMultiUpdateFragment = sap.ui.xmlfragment("filterapp.fragments.Updatemulti", this);
+        //         this.getView().addDependent(this._oMultiUpdateFragment);
+        //     }       
+        //     // Retrieve the selected items data
+        //     var aItemsToUpdate = aSelectedItems.map(function (oItem) {
+        //         return oItem.getBindingContext("ordersitemsModel").getObject();
+        //     });
+        //      var oUpdateModel = new JSONModel(aItemsToUpdate);
+        //     that._oMultiUpdateFragment.setModel(oUpdateModel, "updateModel"); 
+        //     that._oMultiUpdateFragment.open();
+                    
+        // },
+          
+        // onMultiUpdateSubmit: function () {
+        //     var oUpdateModel = this._oMultiUpdateFragment.getModel("updateModel");
+        //     var aUpdatedItems = oUpdateModel.getData();      
+        //     if (!aUpdatedItems || aUpdatedItems.length === 0) {
+        //         sap.m.MessageToast.show("No items available for update.");
+        //         return;
+        //     }       
+        //     var oPayload = {
+        //         UpdatedItems: JSON.stringify(aUpdatedItems) // Convert to JSON string for transmission
+        //     };
+        
+        //     var oModel = this.getOwnerComponent().getModel();      
+        //     oModel.callFunction("/UpdateOrderItems", {
+        //         method: "GET",
+        //         urlParameters: oPayload,
+        //         success: function (oData) {
+        //             sap.m.MessageToast.show("Items updated successfully.");
+        //             this._oMultiUpdateFragment.close();
+        //             var oOrdersItemsModel = this.getView().getModel("ordersitemsModel"); 
+        //             if (oOrdersItemsModel) {
+        //                 oOrdersItemsModel.refresh(true); 
+        //             }
+        //             var oTable = this.byId("itemTable");
+        //             if (oTable) {
+        //                 oTable.removeSelections(true); 
+        //             }
+        //         }.bind(this),
+        //         error: function (Err) {
+        //             sap.m.MessageBox.error("Failed to update items.");
+        //         }
+        //     });
+        // },
         onUpdateOrder: function (oEvent) {
             var oTable = this.byId("itemTable");
             if (!oTable) {
-                MessageToast.show("Table not found.");
+                sap.m.MessageToast.show("Table not found.");
                 return;
-            }       
+            }
+        
             var aSelectedItems = oTable.getSelectedItems();
             if (aSelectedItems.length === 0) {
-                MessageToast.show("Please select at least one item to update.");
+                sap.m.MessageToast.show("Please select at least one item to update.");
                 return;
-            }       
+            }
+        
             // Create the update fragment only once
             if (!this._oMultiUpdateFragment) {
                 this._oMultiUpdateFragment = sap.ui.xmlfragment("filterapp.fragments.Updatemulti", this);
                 this.getView().addDependent(this._oMultiUpdateFragment);
-            }       
-            // Retrieve the selected items data
+            }
+        
+            // Retrieve the selected items data and ensure they have necessary fields (ProductName, Quantity, Price)
             var aItemsToUpdate = aSelectedItems.map(function (oItem) {
-                return oItem.getBindingContext("ordersitemsModel").getObject();
-            });
-             var oUpdateModel = new JSONModel(aItemsToUpdate);
-            that._oMultiUpdateFragment.setModel(oUpdateModel, "updateModel"); 
-            that._oMultiUpdateFragment.open();
-                    
+                var oData = oItem.getBindingContext("ordersitemsModel").getObject();
+                
+                // Validate item data before adding it to the list for update
+                if (!oData.ProductName || !oData.Quantity || !oData.Price) {
+                    sap.m.MessageToast.show("Selected items have incomplete data.");
+                    return null;
+                }
+        
+                return oData;
+            }).filter(Boolean); // Remove invalid items (nulls)
+        
+            if (aItemsToUpdate.length === 0) {
+                sap.m.MessageToast.show("No valid items selected for update.");
+                return;
+            }
+        
+            // Set the selected and valid items into the update model
+            var oUpdateModel = new JSONModel(aItemsToUpdate);
+            this._oMultiUpdateFragment.setModel(oUpdateModel, "updateModel");
+            this._oMultiUpdateFragment.open();
         },
-          
+        
         onMultiUpdateSubmit: function () {
             var oUpdateModel = this._oMultiUpdateFragment.getModel("updateModel");
-            var aUpdatedItems = oUpdateModel.getData();      
+            var aUpdatedItems = oUpdateModel.getData();
+        
             if (!aUpdatedItems || aUpdatedItems.length === 0) {
                 sap.m.MessageToast.show("No items available for update.");
                 return;
-            }       
+            }
+        
+            var validationErrors = [];
+        
+            // Validate each item in the list
+            aUpdatedItems.forEach(function (oItem, index) {
+                if (!oItem.ProductName || oItem.ProductName.trim() === "") {
+                    validationErrors.push(`Row ${index + 1}: Product Name is required.`);
+                }
+                if (!oItem.Quantity || isNaN(oItem.Quantity) || parseInt(oItem.Quantity, 10) <= 0) {
+                    validationErrors.push(`Row ${index + 1}: Quantity must be a valid positive number.`);
+                }
+                if (!oItem.Price || isNaN(oItem.Price) || parseFloat(oItem.Price) <= 0) {
+                    validationErrors.push(`Row ${index + 1}: Price must be a valid positive number.`);
+                }
+            });
+        
+            // If there are validation errors, display them
+            if (validationErrors.length > 0) {
+                sap.m.MessageBox.error(validationErrors.join("\n"));
+                return;
+            }
+        
+            // Prepare the payload for the update request
             var oPayload = {
                 UpdatedItems: JSON.stringify(aUpdatedItems) // Convert to JSON string for transmission
             };
         
-            var oModel = this.getOwnerComponent().getModel();      
+            // Get the model and send the update request to the backend
+            var oModel = this.getOwnerComponent().getModel();
             oModel.callFunction("/UpdateOrderItems", {
-                method: "GET",
+                method: "POST", // You may need to change this to "PUT" if your backend expects PUT for updates
                 urlParameters: oPayload,
-                success: function (oData) {
+                success: function () {
                     sap.m.MessageToast.show("Items updated successfully.");
                     this._oMultiUpdateFragment.close();
-                    var oOrdersItemsModel = this.getView().getModel("ordersitemsModel"); 
+        
+                    // Refresh the local model and the table
+                    var oOrdersItemsModel = this.getView().getModel("ordersitemsModel");
                     if (oOrdersItemsModel) {
-                        oOrdersItemsModel.refresh(true); 
+                        oOrdersItemsModel.refresh(true); // Refresh the items model to reflect updates
                     }
+        
                     var oTable = this.byId("itemTable");
                     if (oTable) {
-                        oTable.removeSelections(true); 
+                        oTable.removeSelections(true); // Clear the selection in the table
                     }
                 }.bind(this),
                 error: function (Err) {
@@ -277,6 +421,7 @@ sap.ui.define([
                 }
             });
         },
+        
         
    
         onDeleteOrder: function (oEvent) {
@@ -679,7 +824,35 @@ sap.ui.define([
 
     });
 });
-  
+   // OnDeleteOrderID: function () {
+        //     var that = this;
+        //     var sOrderID = that.getView().byId("idInput").getValue(); 
+        //     if (!sOrderID) {
+        //         MessageToast.show("Please enter a valid OrderID.");
+        //         return;
+        //     }
+        //     var oModel = that.getOwnerComponent().getModel();
+        //     // Call the backend function to delete the order and associated items
+        //     oModel.callFunction("/deleteorderidanditems", {
+        //         method: "GET",
+        //         urlParameters: {
+        //             OrderID: sOrderID  
+        //         },
+        //         success: function (oData) {
+        //             MessageToast.show("Order and associated items deleted successfully!");         
+        //             // that.clearTable();
+        //             var oTable = that.getView().byId("itemTable");  
+        //             oTable.setModel(new JSONModel([])); 
+        //             that.getView().byId("idInput").setValue(""); 
+
+                   
+        //         },
+              
+        //         error: function (oError) {
+        //             MessageToast.show("Error deleting order and items.");
+        //         }
+        //     });
+        // },
   // onMulticreateSubmit: function () {
         //     // Get values from the form fields
         //     var sID = sap.ui.getCore().byId("idID").getValue();
